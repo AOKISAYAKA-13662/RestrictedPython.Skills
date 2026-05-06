@@ -246,8 +246,8 @@ T	INTR	260227P000002728	CO107	... MYR	162312.77		38.98	...
 |------|------|
 | **関数定義禁止** | `def` 文は使用不可。すべての処理をインラインで記述する |
 | **クラス定義禁止** | `class` 文は使用不可 |
-| スクリプト構成 | `data = infile.read()` → 変換処理 → `outfile.write(data)` の3ステップ必須 |
-| ファイルI/O | `open()`は使用不可。入力は `infile.read()`、出力は `outfile.write()` のみ |
+| スクリプト構成 | `data = infile.read()` → 変換処理 → `default_out.write(data)` の3ステップ必須 |
+| ファイルI/O | `open()`は使用不可。入力は `infile.read()`、出力は `default_out.write()` のみ（**`outfile` は存在しない**） |
 | プリインポート済みモジュール | `ET`, `csv`, `re`, `datetime`, `time`, `collections`, `random`, `hashlib`, `base64`, `json`, `math` |
 | 使用可能組み込み関数 | `len`, `range`, `print`, `str`, `list`, `set`, `max`, `reversed`, `slice`, `enumerate`, `any`, `sum` |
 | 外部ライブラリ | 不可（`pandas`, `openpyxl`等は使用不可） |

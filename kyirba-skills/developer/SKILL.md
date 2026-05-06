@@ -47,7 +47,7 @@ KyribaのRestricted Pythonは通常のPythonとは異なり、使える機能が
 ### **禁止事項（厳守）**
 - **関数定義禁止**: `def` 文は使用不可
 - **クラス定義禁止**: `class` 文は使用不可
-- ファイルI/O（open, read, write）→ Kyribaが `infile` / `outfile` で管理
+- ファイルI/O（open, read, write）→ Kyribaが `infile` / `default_out` で管理（**`outfile` は存在しない**）
 - exec, eval, compile
 - os, sys, subprocess等のシステム関連
 - ネットワーク関連
@@ -56,10 +56,13 @@ KyribaのRestricted Pythonは通常のPythonとは異なり、使える機能が
 スクリプトは必ず以下の3ステップ構成に従う:
 
 ```
-1. data = infile.read()       # Kyribaから入力データを受け取る
-2. （変換処理）                # データを加工・変換する
-3. outfile.write(data)        # Kyribaへ出力データを渡す
+1. data = infile.read()          # Kyribaから入力データを受け取る
+2. （変換処理）                   # データを加工・変換する
+3. default_out.write(data)       # Kyribaへ出力データを渡す（outfile ではなく default_out）
 ```
+
+> **重要**: 出力に使う変数は `outfile` ではなく **`default_out`**。
+> `outfile` はKyriba Restricted Python環境に存在しないため、スクリプトがエラーになる。
 
 ## スクリプト開発手順
 
@@ -110,8 +113,14 @@ CODE_MAP = {
 output_lines = []
 error_log = []
 
-lines = data.splitlines()
+# \r\n (Windows) と \r (旧Mac) を \n に統一してから行分割（改行コード正規化は必須）
+lines = data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
 for row_index, line in enumerate(lines):
+    # 空行は先にスキップ（split前に行う。splitすると空リストになり cols[0] でエラーになる）
+    if line == "":
+        output_lines.append(line)
+        continue
+
     # フィールド分割（CSV形式の例）
     fields = line.split(",")
 
@@ -146,7 +155,8 @@ for row_index, line in enumerate(lines):
 data = "\n".join(output_lines)
 
 # --- Step 3: 出力 ---
-outfile.write(data)
+# 必須: outfile ではなく default_out を使うこと
+default_out.write(data)
 ```
 
 ### Step 4: コメントの記載
@@ -224,11 +234,14 @@ converted_code = CODE_MAP.get(raw_code, "")  # マップにない場合は空文
 
 ### CSVパース（csvモジュール使用）
 ```python
-# csvはプリインポート済み
-import io
-reader = csv.reader(io.StringIO(data))
-rows = list(reader)
-for row in rows:
-    # row はフィールドのリスト
-    pass
+# csv はプリインポート済み。import文は不要（import自体も禁止）
+# io.StringIO は使えないため、行ごとに csv.reader を使う
+lines = data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+for line in lines:
+    if line == "":
+        continue
+    # csv.reader に1行ずつ渡す場合はリストでラップする
+    for row in csv.reader([line]):
+        # row はフィールドのリスト
+        pass
 ```

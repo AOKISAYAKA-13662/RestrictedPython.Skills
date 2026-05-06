@@ -102,6 +102,38 @@ project/
 ```
 
 ## 注意事項
-- Restricted Pythonの制約はKyribaのバージョンにより異なります。
-  developerスキル内の制約一覧は一般的なものなので、実環境に合わせて調整してください。
+
+### Kyriba Restricted Pythonの重要ルール（実環境で確認済み）
+
+| ルール | 内容 |
+|--------|------|
+| **出力ハンドラ** | `default_out.write(data)` を使用。`outfile` は存在しない（致命的エラーになる） |
+| **入力ハンドラ** | `data = infile.read()` で全テキストを取得する |
+| **関数定義禁止** | `def` 文は使用不可。すべての処理をスクリプトのトップレベルにインラインで記述する |
+| **クラス定義禁止** | `class` 文は使用不可 |
+| **import禁止** | `import` 文は不要（モジュールはプリインポート済み）かつ禁止 |
+| **改行コード正規化** | `data.replace("\r\n","\n").replace("\r","\n").split("\n")` で統一してから行分割する |
+| **空行処理** | `line.split("\t")` の**前**に `if line == "": continue` でスキップする |
+
+### スクリプトの必須フォーマット
+
+```python
+# --- Step 1: 入力 ---
+data = infile.read()
+
+# --- Step 2: 変換処理 ---
+lines = data.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+output_lines = []
+for line in lines:
+    if line == "":
+        output_lines.append(line)
+        continue
+    # ... 変換ロジック ...
+data = "\n".join(output_lines)
+
+# --- Step 3: 出力 ---
+default_out.write(data)   # ← outfile ではなく default_out
+```
+
+- developerスキル内の制約一覧は実環境での確認を経て更新済みです。
 - テストはまずローカルPython環境で事前検証し、その後Kyribaテスト環境で最終確認することを推奨します。
