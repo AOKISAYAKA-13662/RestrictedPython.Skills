@@ -87,6 +87,51 @@ KyribaのRestricted Pythonは通常のPythonとは異なり、使える機能が
 4. 出力データの返却
 ```
 
+### コーディング規則（読みやすさ優先）
+
+スクリプトは**業務担当者が自分で読んで修正できること**を最優先にして書く。
+以下の規則を必ず守ること。
+
+#### ✅ やること
+- 条件分岐は `if/else` を使って複数行で書く（1行にまとめない）
+- 変数名は何が入っているかわかる名前にする
+- 各処理ブロックの前にコメントで「何をしているか」を書く
+- 処理の手順を①②③のように番号付きコメントで示す
+
+#### ❌ やらないこと
+- 三項演算子（1行 `if` ）は使わない
+  ```python
+  # ❌ 使わない（何をしているか一目でわからない）
+  account_code = cols[3] if len(cols) > 3 else ""
+
+  # ✅ こう書く
+  if len(cols) > 3:
+      account_code = cols[3]
+  else:
+      account_code = ""
+  ```
+- 複数の条件を1行にまとめない
+  ```python
+  # ❌ 使わない
+  is_botk = (len(internal_code) >= 7 and internal_code[3:7] == "BOTK")
+
+  # ✅ こう書く
+  if len(internal_code) >= 7 and internal_code[3:7] == "BOTK":
+      is_botk = True
+  else:
+      is_botk = False
+  ```
+- `not` を使った否定条件は避け、肯定形で書く
+  ```python
+  # ❌ 避ける
+  if not is_botk:
+
+  # ✅ こう書く
+  if is_botk == False:
+  ```
+
+---
+
 ### Step 3: スクリプトの実装
 
 以下のテンプレートに沿ってスクリプトを作成する（**def/class は一切使わない**）:
